@@ -1,0 +1,49 @@
+server:
+  port: 8080
+  shutdown: graceful
+spring:
+  application:
+    name: reddit-clone
+  profiles:
+    active: local
+  flyway:
+    enabled: true
+    out-of-order: true
+    placeholder-replacement: false
+    schemas: reddit
+  mail:
+    host: smtp.mailtrap.io
+    port: 25
+    username: changeit
+    password: changeit
+    protocol: smtp
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+#    data: classpath:db/scripts/data.sql
+  jpa:
+    hibernate:
+      ddl-auto: create
+  flyway:
+    enabled: false
+---
+spring:
+  config:
+    activate:
+      on-profile: local-postgres
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 20000
+      maximum-pool-size: 10
+      schema: reddit
