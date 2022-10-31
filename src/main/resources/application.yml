@@ -13,7 +13,7 @@ spring:
     schemas: reddit
   mail:
     host: smtp.mailtrap.io
-    port: 25
+    port: 2525
     username: 4fdbe35fa50881
     password: 734c9e6eb1676d
     protocol: smtp
