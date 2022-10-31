@@ -49,7 +49,8 @@ public class AuthService {
         .build());
 
     String token = generateVerificationToken(user);
-    String activationEmailUrl = "http://" + serverAddress + ":" + serverPort + "/" + token;
+    String activationEmailUrl = "http://" + serverAddress + ":" + serverPort
+        + "/api/auth/account-verification/" + token;
 
     String message = mailContentBuilder.build(
         "Thank you for signing up to Reddit, please click on the below url to activate your account : "
