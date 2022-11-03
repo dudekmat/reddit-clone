@@ -1,5 +1,7 @@
 package com.banzo.reddit.controller;
 
+import com.banzo.reddit.dto.AuthenticationResponse;
+import com.banzo.reddit.dto.LoginRequest;
 import com.banzo.reddit.dto.RegistrationRequest;
 import com.banzo.reddit.service.AuthService;
 import javax.validation.Valid;
@@ -32,5 +34,10 @@ public class AuthController {
   public ResponseEntity<String> verifyAccount(@PathVariable @NotBlank String token) {
     authService.verifyAccount(token);
     return ResponseEntity.ok().body("Account activated successfully");
+  }
+
+  @PostMapping("/login")
+  public AuthenticationResponse login(@RequestBody @Valid LoginRequest loginRequest) {
+    return authService.login(loginRequest);
   }
 }

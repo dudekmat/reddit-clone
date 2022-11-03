@@ -17,6 +17,9 @@ spring:
     username: 4fdbe35fa50881
     password: 734c9e6eb1676d
     protocol: smtp
+security:
+  keystore:
+    password: password
 ---
 spring:
   config:
