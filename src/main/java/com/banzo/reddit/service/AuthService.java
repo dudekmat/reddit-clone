@@ -1,5 +1,7 @@
 package com.banzo.reddit.service;
 
+import com.banzo.reddit.dto.AuthenticationResponse;
+import com.banzo.reddit.dto.LoginRequest;
 import com.banzo.reddit.dto.RegistrationRequest;
 import com.banzo.reddit.exception.NotFoundException;
 import com.banzo.reddit.exception.VerificationException;
@@ -8,12 +10,17 @@ import com.banzo.reddit.model.User;
 import com.banzo.reddit.model.VerificationToken;
 import com.banzo.reddit.repository.UserRepository;
 import com.banzo.reddit.repository.VerificationTokenRepository;
+import com.banzo.reddit.security.JwtProvider;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +42,8 @@ public class AuthService {
   private final VerificationTokenRepository verificationTokenRepository;
   private final MailContentBuilder mailContentBuilder;
   private final MailService mailService;
+  private final JwtProvider jwtProvider;
+  private final AuthenticationManager authenticationManager;
 
   @Transactional
   public void signup(RegistrationRequest registrationRequest) {
@@ -71,6 +80,20 @@ public class AuthService {
             .orElseThrow(() -> new VerificationException("Invalid token"));
 
     fetchUserAndEnable(verificationToken);
+  }
+
+  public AuthenticationResponse login(LoginRequest loginRequest) {
+    Authentication authentication = authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
+            loginRequest.getPassword()));
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+
+    String authenticationToken = jwtProvider.generateToken(authentication);
+
+    return AuthenticationResponse.builder()
+        .authenticationToken(authenticationToken)
+        .username(loginRequest.getUsername())
+        .build();
   }
 
   private String generateVerificationToken(User user) {
