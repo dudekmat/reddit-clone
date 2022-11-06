@@ -1,6 +1,9 @@
 package com.banzo.reddit.security;
 
+import static io.jsonwebtoken.Jwts.parser;
+
 import com.banzo.reddit.exception.RedditException;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,6 +22,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class JwtProvider {
 
+  private static final String KEYSTORE_RETRIEVING_ERROR_MESSAGE = "Exception occurred while retrieving public key from keystore";
+  private static final String KEYSTORE_LOADING_ERROR_MESSAGE = "Error occurred while loading keystore";
+
   private KeyStore keyStore;
 
   @Value("${security.keystore.password:}")
@@ -31,7 +37,7 @@ public class JwtProvider {
       InputStream resourceAsStream = getClass().getResourceAsStream("/keystore.jks");
       keyStore.load(resourceAsStream, keystorePassword.toCharArray());
     } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
-      throw new RedditException("Error occurred while loading keystore");
+      throw new RedditException(KEYSTORE_LOADING_ERROR_MESSAGE);
     }
   }
 
@@ -43,11 +49,33 @@ public class JwtProvider {
         .compact();
   }
 
+  public boolean validateToken(String token) {
+    parser().setSigningKey(getPublicKey()).parseClaimsJwt(token);
+    return true;
+  }
+
+  public String getUsernameFromJwt(String token) {
+    Claims claims = parser()
+        .setSigningKey(getPublicKey())
+        .parseClaimsJwt(token)
+        .getBody();
+
+    return claims.getSubject();
+  }
+
   private Key getPrivateKey() {
     try {
       return keyStore.getKey("keystore", keystorePassword.toCharArray());
     } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
-      throw new RedditException("Exception occurred while retrieving public key from keystore");
+      throw new RedditException(KEYSTORE_RETRIEVING_ERROR_MESSAGE);
+    }
+  }
+
+  private Key getPublicKey() {
+    try {
+      return keyStore.getCertificate("keystore").getPublicKey();
+    } catch (KeyStoreException e) {
+      throw new RedditException(KEYSTORE_RETRIEVING_ERROR_MESSAGE);
     }
   }
 }
