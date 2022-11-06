@@ -96,6 +96,16 @@ public class AuthService {
         .build();
   }
 
+  @Transactional(readOnly = true)
+  public User getCurrentUser() {
+    org.springframework.security.core.userdetails.User principal =
+        (org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext()
+            .getAuthentication().getPrincipal();
+
+    return userRepository.findByUsername(principal.getUsername())
+        .orElseThrow(() -> new NotFoundException("User not found: " + principal.getUsername()));
+  }
+
   private String generateVerificationToken(User user) {
     String token = UUID.randomUUID().toString();
 

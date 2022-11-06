@@ -50,14 +50,14 @@ public class JwtProvider {
   }
 
   public boolean validateToken(String token) {
-    parser().setSigningKey(getPublicKey()).parseClaimsJwt(token);
+    parser().setSigningKey(getPublicKey()).parseClaimsJws(token);
     return true;
   }
 
   public String getUsernameFromJwt(String token) {
     Claims claims = parser()
         .setSigningKey(getPublicKey())
-        .parseClaimsJwt(token)
+        .parseClaimsJws(token)
         .getBody();
 
     return claims.getSubject();
