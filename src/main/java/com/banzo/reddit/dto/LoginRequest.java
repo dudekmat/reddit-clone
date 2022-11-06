@@ -8,6 +8,8 @@ import lombok.Value;
 @Builder
 public class LoginRequest {
 
-  @NotBlank String username;
-  @NotBlank String password;
+  @NotBlank(message = "Username is required")
+  String username;
+  @NotBlank(message = "Password is required")
+  String password;
 }
