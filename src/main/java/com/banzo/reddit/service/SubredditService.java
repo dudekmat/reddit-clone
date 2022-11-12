@@ -3,12 +3,10 @@ package com.banzo.reddit.service;
 import com.banzo.reddit.dto.SubredditDetails;
 import com.banzo.reddit.dto.SubredditPayload;
 import com.banzo.reddit.exception.NotFoundException;
-import com.banzo.reddit.model.Subreddit;
+import com.banzo.reddit.mapper.SubredditMapper;
 import com.banzo.reddit.repository.SubredditRepository;
 import java.time.Clock;
-import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,42 +19,26 @@ public class SubredditService {
   private final SubredditRepository subredditRepository;
   private final AuthService authService;
   private final Clock clock;
+  private final SubredditMapper subredditMapper;
 
   @Transactional(readOnly = true)
   public List<SubredditDetails> getAll() {
     return subredditRepository.findAll()
-        .stream().map(this::mapToSubredditDetails)
+        .stream().map(subredditMapper::mapToSubredditDetails)
         .collect(Collectors.toList());
   }
 
   @Transactional
   public SubredditDetails save(SubredditPayload subredditPayload) {
-    var subreddit = subredditRepository.save(mapToSubreddit(subredditPayload));
-    return mapToSubredditDetails(subreddit);
+    var subreddit = subredditRepository.save(
+        subredditMapper.mapToSubreddit(subredditPayload, authService.getCurrentUser(), clock));
+    return subredditMapper.mapToSubredditDetails(subreddit);
   }
 
   @Transactional(readOnly = true)
   public SubredditDetails getSubreddit(long id) {
     return subredditRepository.findById(id)
-        .map(this::mapToSubredditDetails)
+        .map(subredditMapper::mapToSubredditDetails)
         .orElseThrow(() -> new NotFoundException("Subreddit not found with id=" + id));
-  }
-
-  private SubredditDetails mapToSubredditDetails(Subreddit subreddit) {
-    return SubredditDetails.builder()
-        .id(subreddit.getId())
-        .name(subreddit.getName())
-        .description(subreddit.getDescription())
-        .postCount(Objects.nonNull(subreddit.getPosts()) ? subreddit.getPosts().size() : 0)
-        .build();
-  }
-
-  private Subreddit mapToSubreddit(SubredditPayload subredditPayload) {
-    return Subreddit.builder()
-        .name("/r/" + subredditPayload.getName())
-        .description(subredditPayload.getDescription())
-        .user(authService.getCurrentUser())
-        .createdDate(Instant.now(clock))
-        .build();
   }
 }
