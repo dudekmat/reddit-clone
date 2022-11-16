@@ -9,6 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,7 +23,8 @@ import lombok.NoArgsConstructor;
 public class Subreddit {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "subreddit_generator")
+  @SequenceGenerator(name = "subreddit_generator", sequenceName = "subreddit_id_seq", allocationSize = 1)
   private Long id;
 
   private String name;

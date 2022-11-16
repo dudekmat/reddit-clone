@@ -7,6 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
+import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,7 +23,8 @@ import lombok.NoArgsConstructor;
 public class VerificationToken {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "verification_token_generator")
+  @SequenceGenerator(name = "verification_token_generator", sequenceName = "verification_token_id_seq", allocationSize = 1)
   private Long id;
 
   private String token;
