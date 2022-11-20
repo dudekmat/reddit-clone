@@ -19,7 +19,6 @@ class MailService {
   private static final String SENDER_EMAIL = "reddit@banzo.com";
 
   private final JavaMailSender mailSender;
-  private final MailContentBuilder mailContentBuilder;
 
   @Async
   public void sendMail(NotificationEmail notificationEmail) {
@@ -40,7 +39,7 @@ class MailService {
       messageHelper.setFrom(SENDER_EMAIL);
       messageHelper.setTo(notificationEmail.getRecipient());
       messageHelper.setSubject(notificationEmail.getSubject());
-      messageHelper.setText(mailContentBuilder.build(notificationEmail.getBody()));
+      messageHelper.setText(notificationEmail.getBody());
     };
   }
 
