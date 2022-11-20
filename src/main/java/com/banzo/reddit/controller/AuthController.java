@@ -25,9 +25,8 @@ public class AuthController {
   private final AuthService authService;
 
   @PostMapping("/signup")
-  public ResponseEntity<Void> signup(@RequestBody @Valid RegistrationRequest registrationRequest) {
+  public void signup(@RequestBody @Valid RegistrationRequest registrationRequest) {
     authService.signup(registrationRequest);
-    return ResponseEntity.ok().build();
   }
 
   @GetMapping("/account-verification/{token}")

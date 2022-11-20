@@ -1,8 +1,8 @@
 package com.banzo.reddit.controller;
 
-import com.banzo.reddit.dto.PostDetails;
-import com.banzo.reddit.dto.PostPayload;
-import com.banzo.reddit.service.PostService;
+import com.banzo.reddit.dto.CommentDetails;
+import com.banzo.reddit.dto.CommentPayload;
+import com.banzo.reddit.service.CommentService;
 import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
@@ -19,38 +19,26 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/posts")
+@RequestMapping("/api/comments")
 @Validated
 @RequiredArgsConstructor
-public class PostController {
+public class CommentController {
 
-  private final PostService postService;
+  private final CommentService commentService;
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  public void createPost(@RequestBody @Valid PostPayload postPayload) {
-    postService.save(postPayload);
+  public void createComment(@RequestBody @Valid CommentPayload commentPayload) {
+    commentService.createComment(commentPayload);
   }
 
-  @GetMapping
-  public List<PostDetails> getAllPosts() {
-    return postService.getAllPosts();
-  }
-
-  @GetMapping("/{id}")
-  public PostDetails getPost(@PathVariable @NotNull Long id) {
-    return postService.getPost(id);
-  }
-
-  @GetMapping("/by-subreddit/{subredditId}")
-  public List<PostDetails> getPostsBySubreddit(
-      @PathVariable @NotNull Long subredditId) {
-    return postService.getPostsBySubreddit(subredditId);
+  @GetMapping("/by-post/{postId}")
+  public List<CommentDetails> getAllCommentsForPost(@PathVariable @NotNull Long postId) {
+    return commentService.getCommentsByPost(postId);
   }
 
   @GetMapping("/by-user/{username}")
-  public List<PostDetails> getPostsByUsername(
-      @PathVariable @NotBlank String username) {
-    return postService.getPostsByUsername(username);
+  public List<CommentDetails> getAllCommentsByUser(@PathVariable @NotBlank String username) {
+    return commentService.getCommentsByUser(username);
   }
 }
