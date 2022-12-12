@@ -3,12 +3,17 @@ package com.banzo.reddit.service;
 import com.banzo.reddit.dto.PostDetails;
 import com.banzo.reddit.dto.PostPayload;
 import com.banzo.reddit.exception.NotFoundException;
-import com.banzo.reddit.mapper.PostMapper;
+import com.banzo.reddit.model.Post;
+import com.banzo.reddit.model.Subreddit;
+import com.banzo.reddit.repository.CommentRepository;
 import com.banzo.reddit.repository.PostRepository;
 import com.banzo.reddit.repository.SubredditRepository;
 import com.banzo.reddit.repository.UserRepository;
+import com.github.marlonlom.utilities.timeago.TimeAgo;
 import java.time.Clock;
+import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,20 +29,20 @@ public class PostService {
   private final SubredditRepository subredditRepository;
   private final UserRepository userRepository;
   private final AuthService authService;
-  private final PostMapper postMapper;
   private final Clock clock;
+  private final CommentRepository commentRepository;
 
   @Transactional(readOnly = true)
   public PostDetails getPost(long id) {
     return postRepository.findById(id)
-        .map(postMapper::mapToPostDetails)
+        .map(this::mapToPostDetails)
         .orElseThrow(() -> new NotFoundException("Post not found with id=" + id));
   }
 
   @Transactional(readOnly = true)
   public List<PostDetails> getAllPosts() {
     return postRepository.findAll().stream()
-        .map(postMapper::mapToPostDetails)
+        .map(this::mapToPostDetails)
         .collect(Collectors.toList());
   }
 
@@ -47,11 +52,7 @@ public class PostService {
         .orElseThrow(() -> new NotFoundException(
             "Subreddit not found with name=" + postPayload.getSubredditName()));
 
-    postRepository.save(
-        postMapper.mapToPost(postPayload,
-            subreddit,
-            authService.getCurrentUser(),
-            clock));
+    postRepository.save(mapToPost(postPayload, subreddit));
   }
 
   @Transactional(readOnly = true)
@@ -61,7 +62,7 @@ public class PostService {
             "Subreddit not found with id=" + subredditId));
 
     return postRepository.findAllBySubreddit(subreddit).stream()
-        .map(postMapper::mapToPostDetails)
+        .map(this::mapToPostDetails)
         .collect(Collectors.toList());
   }
 
@@ -72,7 +73,35 @@ public class PostService {
             "User not found with username=" + username));
 
     return postRepository.findAllByUser(user).stream()
-        .map(postMapper::mapToPostDetails)
+        .map(this::mapToPostDetails)
         .collect(Collectors.toList());
+  }
+
+  private PostDetails mapToPostDetails(Post post) {
+    return PostDetails.builder()
+        .id(post.getId())
+        .subredditName(post.getSubreddit().getName())
+        .postName(post.getPostName())
+        .url(post.getUrl())
+        .description(post.getDescription())
+        .username(post.getUser().getUsername())
+        .voteCount(post.getVoteCount())
+        .commentCount(
+            Objects.nonNull(commentRepository.findByPost(post)) ? commentRepository.findByPost(post)
+                .size() : 0)
+        .duration(TimeAgo.using(post.getCreatedDate().toEpochMilli()))
+        .build();
+  }
+
+  private Post mapToPost(PostPayload postPayload, Subreddit subreddit) {
+    return Post.builder()
+        .postName(postPayload.getPostName())
+        .url(postPayload.getUrl())
+        .description(postPayload.getDescription())
+        .voteCount(0)
+        .user(authService.getCurrentUser())
+        .createdDate(Instant.now(clock))
+        .subreddit(subreddit)
+        .build();
   }
 }
