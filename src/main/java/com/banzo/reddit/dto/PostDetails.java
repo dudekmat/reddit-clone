@@ -13,4 +13,7 @@ public class PostDetails {
   String url;
   String description;
   String username;
+  Integer voteCount;
+  Integer commentCount;
+  String duration;
 }
