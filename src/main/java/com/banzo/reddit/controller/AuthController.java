@@ -2,11 +2,14 @@ package com.banzo.reddit.controller;
 
 import com.banzo.reddit.dto.AuthenticationResponse;
 import com.banzo.reddit.dto.LoginRequest;
+import com.banzo.reddit.dto.RefreshTokenRequest;
 import com.banzo.reddit.dto.RegistrationRequest;
 import com.banzo.reddit.service.AuthService;
+import com.banzo.reddit.service.RefreshTokenService;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
   private final AuthService authService;
+  private final RefreshTokenService refreshTokenService;
 
   @PostMapping("/signup")
   public void signup(@RequestBody @Valid RegistrationRequest registrationRequest) {
@@ -38,5 +42,18 @@ public class AuthController {
   @PostMapping("/login")
   public AuthenticationResponse login(@RequestBody @Valid LoginRequest loginRequest) {
     return authService.login(loginRequest);
+  }
+
+  @PostMapping("/refresh-token")
+  public AuthenticationResponse refreshToken(
+      @RequestBody @Valid RefreshTokenRequest refreshTokenRequest) {
+    return authService.refreshToken(refreshTokenRequest);
+  }
+
+  @PostMapping("/logout")
+  public ResponseEntity<String> logout(
+      @RequestBody @Valid RefreshTokenRequest refreshTokenRequest) {
+    refreshTokenService.deleteRefreshToken(refreshTokenRequest.getRefreshToken());
+    return ResponseEntity.status(HttpStatus.OK).body("Refresh token deleted successfully.");
   }
 }

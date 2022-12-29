@@ -2,6 +2,7 @@ package com.banzo.reddit.service;
 
 import com.banzo.reddit.dto.AuthenticationResponse;
 import com.banzo.reddit.dto.LoginRequest;
+import com.banzo.reddit.dto.RefreshTokenRequest;
 import com.banzo.reddit.dto.RegistrationRequest;
 import com.banzo.reddit.exception.NotFoundException;
 import com.banzo.reddit.exception.VerificationException;
@@ -44,6 +45,7 @@ public class AuthService {
   private final MailService mailService;
   private final JwtProvider jwtProvider;
   private final AuthenticationManager authenticationManager;
+  private final RefreshTokenService refreshTokenService;
 
   @Transactional
   public void signup(RegistrationRequest registrationRequest) {
@@ -92,6 +94,8 @@ public class AuthService {
 
     return AuthenticationResponse.builder()
         .authenticationToken(authenticationToken)
+        .refreshToken(refreshTokenService.generateRefreshToken())
+        .expiresAt(Instant.now(clock).plusMillis(jwtProvider.getJwtExpirationTimeInMillis()))
         .username(loginRequest.getUsername())
         .build();
   }
@@ -128,5 +132,17 @@ public class AuthService {
         .orElseThrow(() -> new NotFoundException("User not found: " + username));
     user.setEnabled(true);
     userRepository.save(user);
+  }
+
+  public AuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
+    refreshTokenService.validateRefreshToken(refreshTokenRequest.getRefreshToken());
+    String token = jwtProvider.generateTokenWithUsername(refreshTokenRequest.getUsername());
+
+    return AuthenticationResponse.builder()
+        .authenticationToken(token)
+        .refreshToken(refreshTokenRequest.getRefreshToken())
+        .expiresAt(Instant.now(clock).plusMillis(jwtProvider.getJwtExpirationTimeInMillis()))
+        .username(refreshTokenRequest.getUsername())
+        .build();
   }
 }

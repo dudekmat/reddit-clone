@@ -13,6 +13,8 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.time.Instant;
+import java.util.Date;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -30,6 +32,9 @@ public class JwtProvider {
   @Value("${security.keystore.password:}")
   private String keystorePassword;
 
+  @Value("${security.jwt.expiration.time:3600000}")
+  private Long jwtExpirationTimeInMillis;
+
   @PostConstruct
   public void init() {
     try {
@@ -43,9 +48,19 @@ public class JwtProvider {
 
   public String generateToken(Authentication authentication) {
     User principal = (User) authentication.getPrincipal();
+    return buildJwtToken(principal.getUsername());
+  }
+
+  public String generateTokenWithUsername(String username) {
+    return buildJwtToken(username);
+  }
+
+  private String buildJwtToken(String username) {
     return Jwts.builder()
-        .setSubject(principal.getUsername())
+        .setSubject(username)
+        .setIssuedAt(Date.from(Instant.now()))
         .signWith(getPrivateKey())
+        .setExpiration(Date.from(Instant.now().plusMillis(jwtExpirationTimeInMillis)))
         .compact();
   }
 
@@ -77,5 +92,9 @@ public class JwtProvider {
     } catch (KeyStoreException e) {
       throw new RedditException(KEYSTORE_RETRIEVING_ERROR_MESSAGE);
     }
+  }
+
+  public Long getJwtExpirationTimeInMillis() {
+    return jwtExpirationTimeInMillis;
   }
 }
