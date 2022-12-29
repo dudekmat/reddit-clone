@@ -20,6 +20,9 @@ spring:
 security:
   keystore:
     password: password
+  jwt:
+    expiration:
+      time: 3600000
 ---
 spring:
   config:

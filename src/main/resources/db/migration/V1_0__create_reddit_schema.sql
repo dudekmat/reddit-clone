@@ -55,3 +55,9 @@ CREATE TABLE vote (
 	CONSTRAINT user_id_fkey FOREIGN KEY (user_id) REFERENCES app_user(id),
 	CONSTRAINT post_id_fkey FOREIGN KEY (post_id) REFERENCES post(id)
 );
+
+CREATE TABLE refresh_token (
+	id bigserial PRIMARY KEY,
+	token varchar(50) NULL,
+	created_date timestamp NULL
+);
