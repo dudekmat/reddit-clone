@@ -23,8 +23,8 @@ import lombok.NoArgsConstructor;
 public class VerificationToken {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "verification_token_generator")
-  @SequenceGenerator(name = "verification_token_generator", sequenceName = "verification_token_id_seq", allocationSize = 1)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "token_generator")
+  @SequenceGenerator(name = "token_generator", sequenceName = "token_id_seq", allocationSize = 1)
   private Long id;
 
   private String token;
