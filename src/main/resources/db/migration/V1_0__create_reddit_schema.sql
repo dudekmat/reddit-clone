@@ -3,7 +3,7 @@ CREATE TABLE app_user (
 	created timestamp NULL,
 	email varchar(50) NOT NULL,
 	enabled bool NOT NULL,
-	password varchar(50) NOT NULL,
+	password varchar(100) NOT NULL,
 	username varchar(50) NOT NULL
 );
 
@@ -42,7 +42,7 @@ CREATE TABLE comment (
 CREATE TABLE token (
 	id bigserial PRIMARY KEY,
 	expiry_date timestamp NULL,
-	token varchar(50) NULL,
+	token varchar(100) NULL,
 	user_id int8 NULL,
 	CONSTRAINT user_id_fkey FOREIGN KEY (user_id) REFERENCES app_user(id)
 );
@@ -58,6 +58,6 @@ CREATE TABLE vote (
 
 CREATE TABLE refresh_token (
 	id bigserial PRIMARY KEY,
-	token varchar(50) NULL,
+	token varchar(200) NULL,
 	created_date timestamp NULL
 );
