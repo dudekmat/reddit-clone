@@ -9,7 +9,7 @@
     <version>2.7.4</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
-  <groupId>com.banzo</groupId>
+  <groupId>com.github.dudekmat</groupId>
   <artifactId>reddit-clone</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>reddit-clone</name>
