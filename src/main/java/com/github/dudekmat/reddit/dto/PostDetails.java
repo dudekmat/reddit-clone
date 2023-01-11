@@ -16,4 +16,6 @@ public class PostDetails {
   Integer voteCount;
   Integer commentCount;
   String duration;
+  Boolean upVoted;
+  Boolean downVoted;
 }

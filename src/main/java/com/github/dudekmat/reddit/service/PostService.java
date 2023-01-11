@@ -5,15 +5,19 @@ import com.github.dudekmat.reddit.dto.PostPayload;
 import com.github.dudekmat.reddit.exception.NotFoundException;
 import com.github.dudekmat.reddit.model.Post;
 import com.github.dudekmat.reddit.model.Subreddit;
+import com.github.dudekmat.reddit.model.Vote;
+import com.github.dudekmat.reddit.model.VoteType;
 import com.github.dudekmat.reddit.repository.CommentRepository;
 import com.github.dudekmat.reddit.repository.PostRepository;
 import com.github.dudekmat.reddit.repository.SubredditRepository;
 import com.github.dudekmat.reddit.repository.UserRepository;
+import com.github.dudekmat.reddit.repository.VoteRepository;
 import com.github.marlonlom.utilities.timeago.TimeAgo;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +35,7 @@ public class PostService {
   private final AuthService authService;
   private final Clock clock;
   private final CommentRepository commentRepository;
+  private final VoteRepository voteRepository;
 
   @Transactional(readOnly = true)
   public PostDetails getPost(long id) {
@@ -90,6 +95,8 @@ public class PostService {
             Objects.nonNull(commentRepository.findByPost(post)) ? commentRepository.findByPost(post)
                 .size() : 0)
         .duration(TimeAgo.using(post.getCreatedDate().toEpochMilli()))
+        .downVoted(checkVoteType(post, VoteType.DOWNVOTE))
+        .upVoted(checkVoteType(post, VoteType.UPVOTE))
         .build();
   }
 
@@ -103,5 +110,15 @@ public class PostService {
         .createdDate(Instant.now(clock))
         .subreddit(subreddit)
         .build();
+  }
+
+  private boolean checkVoteType(Post post, VoteType voteType) {
+    if (authService.isLoggedIn()) {
+      return voteRepository.findTopByPostAndUserOrderByIdDesc(
+              post, authService.getCurrentUser())
+          .filter(vote -> voteType.equals(vote.getVoteType()))
+          .isPresent();
+    }
+    return false;
   }
 }
